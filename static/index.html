@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<title>Toplantı Quiz Oyunu</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh;
+  }
+  header {
+    margin: 20px; font-size: 2em; font-weight: bold;
+    text-shadow: 0 0 8px #fff;
+  }
+  #login {
+    margin: 20px;
+  }
+  #login input {
+    font-size: 1.2em;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    width: 250px;
+  }
+  #login button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    border-radius: 8px;
+    border: none;
+    background-color: #ff6b6b;
+    color: white;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+  }
+  #login button:hover {
+    background-color: #ff8787;
+  }
+  #game {
+    display: none;
+    max-width: 600px;
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  }
+  #question {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
+    text-shadow: 0 0 6px #000;
+  }
+  #answers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  .answer-btn {
+    flex: 1 1 45%;
+    background: #4a69bd;
+    border: none;
+    padding: 20px;
+    font-size: 1.3em;
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: background-color 0.25s ease;
+  }
+  .answer-btn:hover:not(:disabled) {
+    background: #6a89cc;
+  }
+  .answer-btn:disabled {
+    background: #7f8fa6;
+    cursor: not-allowed;
+  }
+  #answerer-info {
+    margin: 15px 0;
+    font-size: 1.2em;
+    text-align: center;
+  }
+  #timer {
+    font-size: 2em;
+    text-align: center;
+    margin: 10px 0 30px;
+    font-weight: bold;
+  }
+  #scores {
+    margin-top: 30px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 15px;
+    border-radius: 12px;
+  }
+  #scores h3 {
+    margin-top: 0;
+  }
+  #scores ul {
+    list-style: none;
+    padding-left: 0;
+    font-size: 1.1em;
+  }
+  #scores li {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+  }
+  #log {
+    max-width: 600px;
+    width: 100%;
+    margin-top: 30px;
+    min-height: 100px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 1em;
+    color: #f1f1f1;
+  }
+</style>
+</head>
+<body>
+
+<header>Meeting Quiz Oyunu 🎉</header>
+
+<div id="login">
+  <input id="username" type="text" placeholder="Kullanıcı adınızı girin" />
+  <button id="connectBtn">Bağlan</button>
+</div>
+
+<div id="game">
+  <div id="question">Soru burada görünecek...</div>
+  <div id="answers"></div>
+  <div id="answerer-info"></div>
+  <div id="timer">15</div>
+
+  <div id="scores">
+    <h3>Puanlar</h3>
+    <ul id="scoresList"></ul>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<script>
+  let ws;
+  let username = "";
+  let currentAnswerer = "";
+  let timerInterval;
+  let timeLeft = 15;
+
+  const connectBtn = document.getElementById("connectBtn");
+  const usernameInput = document.getElementById("username");
+  const gameDiv = document.getElementById("game");
+  const questionDiv = document.getElementById("question");
+  const answersDiv = document.getElementById("answers");
+  const answererInfo = document.getElementById("answerer-info");
+  const timerDiv = document.getElementById("timer");
+  const scoresList = document.getElementById("scoresList");
+  const logDiv = document.getElementById("log");
+
+  function log(msg) {
+    const p = document.createElement("p");
+    p.textContent = msg;
+    logDiv.appendChild(p);
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+
+  connectBtn.onclick = () => {
+    username = usernameInput.value.trim();
+    if (!username) {
+      alert("Lütfen kullanıcı adınızı girin.");
+      return;
+    }
+
+    ws = new WebSocket(`ws://${location.host}/ws/${username}`);
+
+    ws.onopen = () => {
+      log("Sunucuya bağlandı.");
+      document.getElementById("login").style.display = "none";
+      gameDiv.style.display = "block";
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "info") {
+        log(data.message);
+        updateScores(data.scores);
+      } else if (data.type === "question") {
+        showQuestion(data);
+      } else if (data.type === "correct") {
+        log(`${data.user} doğru cevap verdi ve ${data.points} puan aldı!`);
+        updateScores(data.scores);
+      } else if (data.type === "wrong") {
+        log(`${data.user} yanlış cevap verdi.`);
+        updateScores(data.scores);
+      } else if (data.type === "error") {
+        alert(data.message);
+      } else if (data.type === "scores") {
+        updateScores(data.scores);
+      }
+    };
+
+    ws.onclose = () => {
+      log("Sunucu bağlantısı kapandı.");
+      gameDiv.style.display = "none";
+      document.getElementById("login").style.display = "block";
+    };
+  };
+
+  function showQuestion(data) {
+    questionDiv.textContent = data.question;
+    currentAnswerer = data.answerer;
+    answererInfo.textContent = `Cevap sırası: ${currentAnswerer}`;
+    timeLeft = 15;
+    timerDiv.textContent = timeLeft;
+
+    answersDiv.innerHTML = "";
+    data.answers.forEach((ans, idx) => {
+      const btn = document.createElement("button");
+      btn.textContent = ans;
+      btn.className = "answer-btn";
+      btn.disabled = (username !== currentAnswerer);
+      btn.onclick = () => {
+        ws.send(JSON.stringify({ type: "answer", answer: idx }));
+        disableButtons();
+      };
+      answersDiv.appendChild(btn);
+    });
+
+    startTimer();
+  }
+
+  function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      timerDiv.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        disableButtons();
+      }
+    }, 1000);
+  }
+
+  function disableButtons() {
+    const btns = document.querySelectorAll(".answer-btn");
+    btns.forEach(b => b.disabled = true);
+  }
+
+  function updateScores(scores) {
+    if (!scores) return;
+    scoresList.innerHTML = "";
+    for (const user in scores) {
+      const li = document.createElement("li");
+      li.textContent = `${user}: ${scores[user]} puan`;
+      scoresList.appendChild(li);
+    }
+  }
+</script>
+
+</body>
+</html>
