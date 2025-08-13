@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<title>Toplantı Quiz Oyunu</title>
+<title>Meeting Quiz Oyunu</title>
 <style>
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -37,116 +37,49 @@
     margin-left: 10px;
     transition: background-color 0.3s ease;
   }
-  #login button:hover {
-    background-color: #ff8787;
-  }
-
-  #controls {
-    display:none;
-    margin: 10px 0 0;
-  }
+  #login button:hover { background-color: #ff8787; }
+  
+  #controls { display:none; margin: 10px 0 0; }
   #controls button {
-    padding: 8px 14px;
-    font-size: 1em;
-    border-radius: 10px;
-    border: none;
-    background: #00c897;
-    color: #0b1726;
-    cursor: pointer;
+    padding: 8px 14px; font-size: 1em; border-radius: 10px;
+    border: none; background: #00c897; color: #0b1726; cursor: pointer;
   }
 
   #game {
     display: none;
-    max-width: 600px;
-    width: 100%;
+    max-width: 600px; width: 100%;
     background: rgba(0,0,0,0.25);
-    border-radius: 12px;
-    padding: 30px;
+    border-radius: 12px; padding: 30px;
     box-shadow: 0 0 20px rgba(0,0,0,0.4);
   }
-  #question {
-    font-size: 1.8em;
-    margin-bottom: 20px;
-    text-align: center;
-    text-shadow: 0 0 6px #000;
-  }
-  #answers {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-  }
+  #question { font-size: 1.8em; margin-bottom: 20px; text-align: center; text-shadow: 0 0 6px #000; }
+  #answers { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
   .answer-btn {
-    flex: 1 1 45%;
-    background: #4a69bd;
-    border: none;
-    padding: 20px;
-    font-size: 1.3em;
-    border-radius: 15px;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    transition: background-color 0.25s ease;
+    flex: 1 1 45%; background: #4a69bd; border: none; padding: 20px;
+    font-size: 1.3em; border-radius: 15px; color: white; cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: background-color 0.25s ease;
   }
-  .answer-btn:hover:not(:disabled) {
-    background: #6a89cc;
-  }
-  .answer-btn:disabled {
-    background: #7f8fa6;
-    cursor: not-allowed;
-  }
-  #answerer-info {
-    margin: 15px 0;
-    font-size: 1.1em;
-    text-align: center;
-    opacity: 0.9;
-  }
-  #timer {
-    font-size: 2em;
-    text-align: center;
-    margin: 10px 0 30px;
-    font-weight: bold;
-  }
-  #scores {
-    margin-top: 30px;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 15px;
-    border-radius: 12px;
-  }
-  #scores h3 {
-    margin-top: 0;
-  }
-  #scores ul {
-    list-style: none;
-    padding-left: 0;
-    font-size: 1.1em;
-  }
-  #scores li {
-    padding: 5px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-  }
+  .answer-btn:hover:not(:disabled) { background: #6a89cc; }
+  .answer-btn:disabled { background: #7f8fa6; cursor: not-allowed; }
+
+  #answerer-info { margin: 15px 0; font-size: 1.1em; text-align: center; opacity: 0.9; }
+  #timer { font-size: 2em; text-align: center; margin: 10px 0 30px; font-weight: bold; }
+
+  #scores { margin-top: 30px; background: rgba(255, 255, 255, 0.15); padding: 15px; border-radius: 12px; }
+  #scores h3 { margin-top: 0; }
+  #scores ul { list-style: none; padding-left: 0; font-size: 1.1em; }
+  #scores li { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.3); }
+
   #log {
-    max-width: 600px;
-    width: 100%;
-    margin-top: 30px;
-    min-height: 100px;
-    max-height: 200px;
-    overflow-y: auto;
-    background: rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 15px;
-    font-size: 1em;
-    color: #f1f1f1;
+    max-width: 600px; width: 100%; margin-top: 30px;
+    min-height: 100px; max-height: 200px; overflow-y: auto;
+    background: rgba(255,255,255,0.15); border-radius: 12px; padding: 15px;
+    font-size: 1em; color: #f1f1f1;
   }
   #winner-box {
-    display:none;
-    margin-top: 20px;
-    padding: 14px 18px;
-    border-radius: 12px;
-    background: rgba(255, 215, 0, 0.9);
-    color: #1a1a1a;
-    font-weight: 700;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    display:none; margin-top: 20px; padding: 14px 18px;
+    border-radius: 12px; background: rgba(255, 215, 0, 0.9);
+    color: #1a1a1a; font-weight: 700; box-shadow: 0 6px 18px rgba(0,0,0,0.25);
   }
 </style>
 </head>
@@ -160,7 +93,7 @@
 </div>
 
 <div id="controls">
-  <button id="startBtn">Yeni Soru Başlat</button>
+  <button id="startBtn">Yeni Soru Başlat (Mod)</button>
 </div>
 
 <div id="game">
@@ -178,10 +111,8 @@
 <div id="winner-box"></div>
 <div id="log"></div>
 
-<!-- Socket.IO client -->
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
 <script>
-  // ==== ELEMENTLER ====
   const connectBtn = document.getElementById("connectBtn");
   const usernameInput = document.getElementById("username");
   const controlsDiv = document.getElementById("controls");
@@ -194,19 +125,17 @@
   const logDiv = document.getElementById("log");
   const winnerBox = document.getElementById("winner-box");
 
-  // ==== DURUMLAR ====
   let socket = null;
   let participantId = null;
   let currentRoundId = null;
-  let joinSent = false;
   let timerInterval = null;
+  let joined = false;
 
   function log(msg) {
     const p = document.createElement("p");
     p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
     logDiv.appendChild(p);
     logDiv.scrollTop = logDiv.scrollHeight;
-    console.log(msg);
   }
 
   function disableChoices() {
@@ -227,67 +156,51 @@
     }, 1000);
   }
 
-  // ==== KATIL ====
   connectBtn.onclick = () => {
     const name = usernameInput.value.trim();
-    if (!name) {
-      alert("Lütfen kullanıcı adınızı girin.");
-      return;
-    }
-    if (joinSent) return;
+    if (!name) { alert("Lütfen kullanıcı adınızı girin."); return; }
+    if (joined) return;
 
-    // Socket.IO'ya bağlan
-    socket = io({
-      path: "/socket.io/",
-      // Render arkasında genelde upgrade başarılı; sorun olursa sadece websocket'e düşürebilirsin:
-      // transports: ["websocket"],
-      withCredentials: false,
-    });
+    socket = io({ path: "/socket.io/", withCredentials: false });
 
-    // Bağlantı olayları (görünür log)
     socket.on("connect", () => {
-      log("Socket.IO bağlandı: " + socket.id);
-      // Sunucuya katılma
-      socket.emit("join", {
-        name,
-        meeting_id: "demo-room",
-        is_moderator: name.toLowerCase() === "mod"
-      });
+      log("Bağlandı: " + socket.id);
+      socket.emit("join", { name, meeting_id: "demo-room", is_moderator: name.toLowerCase() === "mod" });
     });
 
     socket.on("connect_error", (err) => {
-      log("Bağlantı hatası: " + (err && err.message ? err.message : err));
-      alert("Sunucuya bağlanılamadı. Konsolu kontrol edin.");
+      log("Bağlantı hatası: " + (err?.message || err));
+      alert("Sunucuya bağlanılamadı.");
     });
 
     socket.on("disconnect", (reason) => {
-      log("Socket.IO koptu: " + reason);
+      log("Koptu: " + reason);
       gameDiv.style.display = "none";
       controlsDiv.style.display = "none";
       document.getElementById("login").style.display = "block";
     });
 
-    // Uygulama event'leri
     socket.on("joined", (data) => {
       participantId = data.participant_id;
-      joinSent = true;
-      log("Odaya katıldın. Participant ID: " + participantId);
+      joined = true;
       document.getElementById("login").style.display = "none";
       gameDiv.style.display = "block";
+      log("Odaya katıldın.");
     });
 
     socket.on("participants_update", (list) => {
-      // Moderatör kontrolü
       const me = list.find(p => p.id === participantId);
-      if (me && me.is_moderator) {
-        controlsDiv.style.display = "block";
-      }
-      // Skorları da güncelle (puan 0 olsa bile tablo görünsün)
-      updateScoresFromList(list);
+      if (me?.is_moderator) controlsDiv.style.display = "block";
+      // tablo
+      scoresList.innerHTML = "";
+      list.sort((a,b) => b.score - a.score).forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = `${p.name}: ${p.score} puan`;
+        scoresList.appendChild(li);
+      });
     });
 
     socket.on("leaderboard", (list) => {
-      // list: [{id,name,score}, ...]
       scoresList.innerHTML = "";
       list.forEach(p => {
         const li = document.createElement("li");
@@ -299,18 +212,15 @@
     socket.on("start_round", (data) => {
       winnerBox.style.display = "none";
       currentRoundId = data.round_id;
-
       questionDiv.textContent = data.question.text;
+
       answersDiv.innerHTML = "";
       (data.question.choices || []).forEach((ans, idx) => {
         const btn = document.createElement("button");
         btn.textContent = ans;
         btn.className = "answer-btn";
         btn.onclick = () => {
-          socket.emit("answer", {
-            round_id: currentRoundId,
-            selected_index: idx
-          });
+          socket.emit("answer", { round_id: currentRoundId, selected_index: idx });
           disableChoices();
         };
         answersDiv.appendChild(btn);
@@ -321,49 +231,36 @@
     });
 
     socket.on("player_answered", (data) => {
-      // {player_id, correct, points, elapsed}
       const who = data.player_id === participantId ? "Sen" : "Bir oyuncu";
       const corr = data.correct ? "doğru" : "yanlış";
-      log(`${who} cevap verdi (${corr}). Puan: ${data.points}`);
+      log(`${who} cevap verdi (${corr}). +${data.points} puan`);
     });
 
     socket.on("round_result", (data) => {
-      // {round_id, correct_index}
       clearInterval(timerInterval);
       disableChoices();
-      // Doğru şıkkı yeşil, diğerlerini pasifleştirelim (opsiyonel)
       const idx = data.correct_index;
       const btns = document.querySelectorAll(".answer-btn");
-      if (btns[idx]) btns[idx].style.background = "#05c46b";
-      log("Süre bitti. Doğru şık: " + (typeof idx === "number" ? idx+1 : "?"));
+      if (typeof idx === "number" && btns[idx]) btns[idx].style.background = "#05c46b";
+      log("Tur bitti. Doğru şık açıklandı.");
     });
 
     socket.on("game_over", (data) => {
-      // {winner}
       winnerBox.style.display = "block";
       winnerBox.textContent = "Kazanan: " + data.winner;
       log("Oyun bitti. Kazanan: " + data.winner);
     });
+
+    socket.on("error_msg", (data) => {
+      alert(data.msg || "Hata");
+      log("Hata: " + (data.msg || ""));
+    });
   };
 
-  // Moderatör: Yeni soru
   startBtn.onclick = () => {
     if (!socket) return;
     socket.emit("start_round", {});
   };
-
-  function updateScoresFromList(list) {
-    scoresList.innerHTML = "";
-    list
-      .slice()
-      .sort((a,b) => b.score - a.score)
-      .forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = `${p.name}: ${p.score} puan`;
-        scoresList.appendChild(li);
-      });
-  }
 </script>
-
 </body>
 </html>
