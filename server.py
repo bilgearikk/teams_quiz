@@ -113,20 +113,17 @@ async def on_start_round(sid, data):
     if not m:
         return
 
-    # Sadece moderator başlatabilir
     if not m["participants"].get(pid, {}).get("is_moderator"):
         await sio.emit("error_msg", {"msg": "Sadece moderator round başlatabilir."}, to=sid)
         return
 
-    # Bitmeyen soru varsa yenisini başlatma
     if m["current_round"]:
         await sio.emit("error_msg", {"msg": "Devam eden soru var."}, to=sid)
         return
 
-    # Soru havuzu
     available_questions = [q for q in m["questions"] if q["id"] not in m["asked_questions"]]
     if not available_questions:
-        # Oyun bitti
+    
         leaderboard = sorted(m["participants"].values(), key=lambda x: -x["score"])
         winner_name = leaderboard[0]["name"] if leaderboard else "Yok"
         await sio.emit("game_over", {"winner": winner_name}, room=meeting_id)
@@ -154,13 +151,13 @@ async def on_start_round(sid, data):
         "start_time": start_time
     }, room=meeting_id)
 
-    # 10 sn sonra round bitir
+
     async def round_timeout_checker(mid, rid):
         await asyncio.sleep(10)
         m2 = meetings.get(mid)
         if not m2 or not m2.get("current_round") or m2["current_round"]["round_id"] != rid:
             return
-        # Süre doldu
+
         await sio.emit("round_result", {
             "round_id": rid,
             "correct_index": m2["current_round"]["question"]["correct_index"]

@@ -1,182 +1,368 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Kahoot Tarzı Quiz</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            text-align: center;
-            padding: 20px;
-        }
-        #question-box {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            display: none;
-            max-width: 500px;
-            margin: auto;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        #choices button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            font-size: 16px;
-            border-radius: 8px;
-            border: none;
-            background: #007BFF;
-            color: white;
-            cursor: pointer;
-        }
-        #choices button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        #leaderboard {
-            margin-top: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        #winner-box {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            background: gold;
-            border-radius: 10px;
-            font-weight: bold;
-            color: black;
-        }
-        #timer {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-    </style>
+<meta charset="UTF-8" />
+<title>Toplantı Quiz Oyunu</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+    margin: 0; padding: 0;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh;
+  }
+  header {
+    margin: 20px; font-size: 2em; font-weight: bold;
+    text-shadow: 0 0 8px #fff;
+  }
+  #login {
+    margin: 20px;
+  }
+  #login input {
+    font-size: 1.2em;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    width: 250px;
+  }
+  #login button {
+    padding: 10px 20px;
+    font-size: 1.2em;
+    border-radius: 8px;
+    border: none;
+    background-color: #ff6b6b;
+    color: white;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
+  }
+  #login button:hover {
+    background-color: #ff8787;
+  }
+
+  #controls {
+    display:none;
+    margin: 10px 0 0;
+  }
+  #controls button {
+    padding: 8px 14px;
+    font-size: 1em;
+    border-radius: 10px;
+    border: none;
+    background: #00c897;
+    color: #0b1726;
+    cursor: pointer;
+  }
+
+  #game {
+    display: none;
+    max-width: 600px;
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  }
+  #question {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
+    text-shadow: 0 0 6px #000;
+  }
+  #answers {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+  .answer-btn {
+    flex: 1 1 45%;
+    background: #4a69bd;
+    border: none;
+    padding: 20px;
+    font-size: 1.3em;
+    border-radius: 15px;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: background-color 0.25s ease;
+  }
+  .answer-btn:hover:not(:disabled) {
+    background: #6a89cc;
+  }
+  .answer-btn:disabled {
+    background: #7f8fa6;
+    cursor: not-allowed;
+  }
+  #answerer-info {
+    margin: 15px 0;
+    font-size: 1.1em;
+    text-align: center;
+    opacity: 0.9;
+  }
+  #timer {
+    font-size: 2em;
+    text-align: center;
+    margin: 10px 0 30px;
+    font-weight: bold;
+  }
+  #scores {
+    margin-top: 30px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 15px;
+    border-radius: 12px;
+  }
+  #scores h3 {
+    margin-top: 0;
+  }
+  #scores ul {
+    list-style: none;
+    padding-left: 0;
+    font-size: 1.1em;
+  }
+  #scores li {
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+  }
+  #log {
+    max-width: 600px;
+    width: 100%;
+    margin-top: 30px;
+    min-height: 100px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 15px;
+    font-size: 1em;
+    color: #f1f1f1;
+  }
+  #winner-box {
+    display:none;
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    background: rgba(255, 215, 0, 0.9);
+    color: #1a1a1a;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+  }
+</style>
 </head>
 <body>
 
-<h1>Kahoot Tarzı Quiz</h1>
+<header>Meeting Quiz Oyunu 🎉</header>
 
-<div>
-    <input id="name" placeholder="Adınız">
-    <button id="joinBtn">Katıl</button>
+<div id="login">
+  <input id="username" type="text" placeholder="Kullanıcı adınızı girin (mod = moderatör)" />
+  <button id="connectBtn">Katıl</button>
 </div>
 
-<div id="moderator-controls" style="display:none; margin-top:10px;">
-    <button id="startRoundBtn">Yeni Soru Başlat</button>
+<div id="controls">
+  <button id="startBtn">Yeni Soru Başlat</button>
 </div>
 
-<div id="question-box">
-    <div id="timer"></div>
-    <div id="question-text"></div>
-    <div id="choices"></div>
+<div id="game">
+  <div id="answerer-info">Herkes aynı anda cevap verebilir.</div>
+  <div id="question">Soru burada görünecek...</div>
+  <div id="answers"></div>
+  <div id="timer">10</div>
+
+  <div id="scores">
+    <h3>Puanlar</h3>
+    <ul id="scoresList"></ul>
+  </div>
 </div>
 
-<div id="leaderboard"></div>
 <div id="winner-box"></div>
+<div id="log"></div>
 
-<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+<!-- Socket.IO client -->
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js" crossorigin="anonymous"></script>
 <script>
-    const socket = io();
-    let participantId = null;
-    let currentRoundId = null;
-    let startTime = null;
-    let isModerator = false;
-    let timerInterval = null;
+  // ==== ELEMENTLER ====
+  const connectBtn = document.getElementById("connectBtn");
+  const usernameInput = document.getElementById("username");
+  const controlsDiv = document.getElementById("controls");
+  const startBtn = document.getElementById("startBtn");
+  const gameDiv = document.getElementById("game");
+  const questionDiv = document.getElementById("question");
+  const answersDiv = document.getElementById("answers");
+  const timerDiv = document.getElementById("timer");
+  const scoresList = document.getElementById("scoresList");
+  const logDiv = document.getElementById("log");
+  const winnerBox = document.getElementById("winner-box");
 
-    document.getElementById("joinBtn").onclick = () => {
-        const name = document.getElementById("name").value;
-        socket.emit("join", { name, meeting_id: "demo-room", is_moderator: name.toLowerCase() === "mod" });
-    };
+  // ==== DURUMLAR ====
+  let socket = null;
+  let participantId = null;
+  let currentRoundId = null;
+  let joinSent = false;
+  let timerInterval = null;
 
-    document.getElementById("startRoundBtn").onclick = () => {
-        socket.emit("start_round", {});
-    };
+  function log(msg) {
+    const p = document.createElement("p");
+    p.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    logDiv.appendChild(p);
+    logDiv.scrollTop = logDiv.scrollHeight;
+    console.log(msg);
+  }
 
-    socket.on("joined", data => {
-        participantId = data.participant_id;
-    });
+  function disableChoices() {
+    document.querySelectorAll(".answer-btn").forEach(b => b.disabled = true);
+  }
 
-    socket.on("participants_update", list => {
-        const me = list.find(p => p.id === participantId);
-        if (me && me.is_moderator) {
-            isModerator = true;
-            document.getElementById("moderator-controls").style.display = "block";
-        }
-    });
-
-    socket.on("start_round", data => {
-        currentRoundId = data.round_id;
-        startTime = Date.now();
-        document.getElementById("question-box").style.display = "block";
-        document.getElementById("winner-box").style.display = "none";
-
-        document.getElementById("question-text").innerText = data.question.text;
-        const choicesDiv = document.getElementById("choices");
-        choicesDiv.innerHTML = "";
-        data.question.choices.forEach((choice, idx) => {
-            const btn = document.createElement("button");
-            btn.innerText = choice;
-            btn.onclick = () => {
-                socket.emit("answer", {
-                    round_id: currentRoundId,
-                    selected_index: idx
-                });
-                disableChoices();
-            };
-            choicesDiv.appendChild(btn);
-        });
-
-        startTimer(10);
-    });
-
-    socket.on("player_answered", data => {
-        console.log("Player answered:", data);
-    });
-
-    socket.on("round_result", data => {
+  function startTimer(seconds) {
+    let remaining = seconds;
+    timerDiv.textContent = remaining;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      remaining--;
+      timerDiv.textContent = remaining;
+      if (remaining <= 0) {
+        clearInterval(timerInterval);
         disableChoices();
-        clearInterval(timerInterval);
-    });
+      }
+    }, 1000);
+  }
 
-    socket.on("leaderboard", list => {
-        const lb = document.getElementById("leaderboard");
-        lb.innerHTML = "<h3>Puan Tablosu</h3>";
-        list.forEach(p => {
-            lb.innerHTML += `<div>${p.name}: ${p.score}</div>`;
-        });
-    });
-
-    socket.on("game_over", data => {
-        document.getElementById("winner-box").style.display = "block";
-        document.getElementById("winner-box").innerText = "Kazanan: " + data.winner;
-        document.getElementById("question-box").style.display = "none";
-    });
-
-    function disableChoices() {
-        document.querySelectorAll("#choices button").forEach(b => b.disabled = true);
+  // ==== KATIL ====
+  connectBtn.onclick = () => {
+    const name = usernameInput.value.trim();
+    if (!name) {
+      alert("Lütfen kullanıcı adınızı girin.");
+      return;
     }
+    if (joinSent) return;
 
-    function startTimer(seconds) {
-        let remaining = seconds;
-        const timerEl = document.getElementById("timer");
-        timerEl.innerText = "Kalan süre: " + remaining;
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            remaining--;
-            timerEl.innerText = "Kalan süre: " + remaining;
-            if (remaining <= 0) {
-                clearInterval(timerInterval);
-            }
-        }, 1000);
-    }
+    // Socket.IO'ya bağlan
+    socket = io({
+      path: "/socket.io/",
+      // Render arkasında genelde upgrade başarılı; sorun olursa sadece websocket'e düşürebilirsin:
+      // transports: ["websocket"],
+      withCredentials: false,
+    });
+
+    // Bağlantı olayları (görünür log)
+    socket.on("connect", () => {
+      log("Socket.IO bağlandı: " + socket.id);
+      // Sunucuya katılma
+      socket.emit("join", {
+        name,
+        meeting_id: "demo-room",
+        is_moderator: name.toLowerCase() === "mod"
+      });
+    });
+
+    socket.on("connect_error", (err) => {
+      log("Bağlantı hatası: " + (err && err.message ? err.message : err));
+      alert("Sunucuya bağlanılamadı. Konsolu kontrol edin.");
+    });
+
+    socket.on("disconnect", (reason) => {
+      log("Socket.IO koptu: " + reason);
+      gameDiv.style.display = "none";
+      controlsDiv.style.display = "none";
+      document.getElementById("login").style.display = "block";
+    });
+
+    // Uygulama event'leri
+    socket.on("joined", (data) => {
+      participantId = data.participant_id;
+      joinSent = true;
+      log("Odaya katıldın. Participant ID: " + participantId);
+      document.getElementById("login").style.display = "none";
+      gameDiv.style.display = "block";
+    });
+
+    socket.on("participants_update", (list) => {
+      // Moderatör kontrolü
+      const me = list.find(p => p.id === participantId);
+      if (me && me.is_moderator) {
+        controlsDiv.style.display = "block";
+      }
+      // Skorları da güncelle (puan 0 olsa bile tablo görünsün)
+      updateScoresFromList(list);
+    });
+
+    socket.on("leaderboard", (list) => {
+      // list: [{id,name,score}, ...]
+      scoresList.innerHTML = "";
+      list.forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = `${p.name}: ${p.score} puan`;
+        scoresList.appendChild(li);
+      });
+    });
+
+    socket.on("start_round", (data) => {
+      winnerBox.style.display = "none";
+      currentRoundId = data.round_id;
+
+      questionDiv.textContent = data.question.text;
+      answersDiv.innerHTML = "";
+      (data.question.choices || []).forEach((ans, idx) => {
+        const btn = document.createElement("button");
+        btn.textContent = ans;
+        btn.className = "answer-btn";
+        btn.onclick = () => {
+          socket.emit("answer", {
+            round_id: currentRoundId,
+            selected_index: idx
+          });
+          disableChoices();
+        };
+        answersDiv.appendChild(btn);
+      });
+
+      startTimer(10);
+      log("Yeni soru başladı.");
+    });
+
+    socket.on("player_answered", (data) => {
+      // {player_id, correct, points, elapsed}
+      const who = data.player_id === participantId ? "Sen" : "Bir oyuncu";
+      const corr = data.correct ? "doğru" : "yanlış";
+      log(`${who} cevap verdi (${corr}). Puan: ${data.points}`);
+    });
+
+    socket.on("round_result", (data) => {
+      // {round_id, correct_index}
+      clearInterval(timerInterval);
+      disableChoices();
+      // Doğru şıkkı yeşil, diğerlerini pasifleştirelim (opsiyonel)
+      const idx = data.correct_index;
+      const btns = document.querySelectorAll(".answer-btn");
+      if (btns[idx]) btns[idx].style.background = "#05c46b";
+      log("Süre bitti. Doğru şık: " + (typeof idx === "number" ? idx+1 : "?"));
+    });
+
+    socket.on("game_over", (data) => {
+      // {winner}
+      winnerBox.style.display = "block";
+      winnerBox.textContent = "Kazanan: " + data.winner;
+      log("Oyun bitti. Kazanan: " + data.winner);
+    });
+  };
+
+  // Moderatör: Yeni soru
+  startBtn.onclick = () => {
+    if (!socket) return;
+    socket.emit("start_round", {});
+  };
+
+  function updateScoresFromList(list) {
+    scoresList.innerHTML = "";
+    list
+      .slice()
+      .sort((a,b) => b.score - a.score)
+      .forEach(p => {
+        const li = document.createElement("li");
+        li.textContent = `${p.name}: ${p.score} puan`;
+        scoresList.appendChild(li);
+      });
+  }
 </script>
 
 </body>

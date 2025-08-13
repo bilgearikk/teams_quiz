@@ -15,7 +15,6 @@ with open("static/index.html", "r", encoding="utf-8") as f:
 async def get():
     return HTMLResponse(html_content)
 
-# --- SORULAR ---
 questions = [
     {
         "question": "SAP'nin açılımı nedir?",
@@ -104,16 +103,15 @@ questions = [
     }
 ]
 
-TOTAL_QUESTIONS = 10            # İstersen arttır/azalt
-QUESTION_TIME = 10              # saniye
+TOTAL_QUESTIONS = 10            
+QUESTION_TIME = 10            
 
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
         self.usernames: List[str] = []
         self.scores = {}
-        self.answered_users = set()   # o soru için cevap verenler
-
+        self.answered_users = set()   
     async def connect(self, websocket: WebSocket, username: str):
         await websocket.accept()
         self.active_connections.append(websocket)
@@ -126,8 +124,7 @@ class ConnectionManager:
             user = self.usernames[idx]
             del self.usernames[idx]
             del self.active_connections[idx]
-            # Skoru silme; çıkıp tekrar girerse kaldığı yerden devam etsin
-
+            
     async def send_personal_message(self, message: dict, websocket: WebSocket):
         await websocket.send_json(message)
 
@@ -136,7 +133,7 @@ class ConnectionManager:
             try:
                 await connection.send_json(message)
             except Exception:
-                # kopan bağlantı olursa sessiz geç
+                
                 pass
 
 manager = ConnectionManager()
@@ -204,7 +201,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
         "scores": manager.scores
     })
 
-    # En az 2 kişi olunca quiz başlasın (Kahoot mantığı)
+   
     if len(manager.active_connections) >= 2 and not quiz_running:
         asyncio.create_task(start_quiz())
 
@@ -214,7 +211,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
             data = json.loads(raw)
 
             if data.get("type") == "answer" and current_question is not None:
-                # aynı kullanıcı aynı soruya sadece 1 kez cevap verebilir
+               
                 if username in manager.answered_users:
                     continue
                 manager.answered_users.add(username)
