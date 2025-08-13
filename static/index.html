@@ -1,267 +1,182 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<title>Toplantı Quiz Oyunu</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #6e8efb, #a777e3);
-    color: white;
-    margin: 0; padding: 0;
-    display: flex; flex-direction: column; align-items: center;
-    min-height: 100vh;
-  }
-  header {
-    margin: 20px; font-size: 2em; font-weight: bold;
-    text-shadow: 0 0 8px #fff;
-  }
-  #login {
-    margin: 20px;
-  }
-  #login input {
-    font-size: 1.2em;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    width: 250px;
-  }
-  #login button {
-    padding: 10px 20px;
-    font-size: 1.2em;
-    border-radius: 8px;
-    border: none;
-    background-color: #ff6b6b;
-    color: white;
-    cursor: pointer;
-    margin-left: 10px;
-    transition: background-color 0.3s ease;
-  }
-  #login button:hover {
-    background-color: #ff8787;
-  }
-  #game {
-    display: none;
-    max-width: 600px;
-    width: 100%;
-    background: rgba(0,0,0,0.25);
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.4);
-  }
-  #question {
-    font-size: 1.8em;
-    margin-bottom: 20px;
-    text-align: center;
-    text-shadow: 0 0 6px #000;
-  }
-  #answers {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-  }
-  .answer-btn {
-    flex: 1 1 45%;
-    background: #4a69bd;
-    border: none;
-    padding: 20px;
-    font-size: 1.3em;
-    border-radius: 15px;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    transition: background-color 0.25s ease;
-  }
-  .answer-btn:hover:not(:disabled) {
-    background: #6a89cc;
-  }
-  .answer-btn:disabled {
-    background: #7f8fa6;
-    cursor: not-allowed;
-  }
-  #answerer-info {
-    margin: 15px 0;
-    font-size: 1.2em;
-    text-align: center;
-  }
-  #timer {
-    font-size: 2em;
-    text-align: center;
-    margin: 10px 0 30px;
-    font-weight: bold;
-  }
-  #scores {
-    margin-top: 30px;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 15px;
-    border-radius: 12px;
-  }
-  #scores h3 {
-    margin-top: 0;
-  }
-  #scores ul {
-    list-style: none;
-    padding-left: 0;
-    font-size: 1.1em;
-  }
-  #scores li {
-    padding: 5px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-  }
-  #log {
-    max-width: 600px;
-    width: 100%;
-    margin-top: 30px;
-    min-height: 100px;
-    overflow-y: auto;
-    background: rgba(255,255,255,0.15);
-    border-radius: 12px;
-    padding: 15px;
-    font-size: 1em;
-    color: #f1f1f1;
-  }
-</style>
+    <meta charset="UTF-8">
+    <title>Kahoot Tarzı Quiz</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            text-align: center;
+            padding: 20px;
+        }
+        #question-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        #choices button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            background: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        #choices button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #leaderboard {
+            margin-top: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #winner-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: gold;
+            border-radius: 10px;
+            font-weight: bold;
+            color: black;
+        }
+        #timer {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
 
-<header>Meeting Quiz Oyunu 🎉</header>
+<h1>Kahoot Tarzı Quiz</h1>
 
-<div id="login">
-  <input id="username" type="text" placeholder="Kullanıcı adınızı girin" />
-  <button id="connectBtn">Bağlan</button>
+<div>
+    <input id="name" placeholder="Adınız">
+    <button id="joinBtn">Katıl</button>
 </div>
 
-<div id="game">
-  <div id="question">Soru burada görünecek...</div>
-  <div id="answers"></div>
-  <div id="answerer-info"></div>
-  <div id="timer">15</div>
-
-  <div id="scores">
-    <h3>Puanlar</h3>
-    <ul id="scoresList"></ul>
-  </div>
+<div id="moderator-controls" style="display:none; margin-top:10px;">
+    <button id="startRoundBtn">Yeni Soru Başlat</button>
 </div>
 
-<div id="log"></div>
+<div id="question-box">
+    <div id="timer"></div>
+    <div id="question-text"></div>
+    <div id="choices"></div>
+</div>
 
+<div id="leaderboard"></div>
+<div id="winner-box"></div>
+
+<script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
 <script>
-  let ws;
-  let username = "";
-  let currentAnswerer = "";
-  let timerInterval;
-  let timeLeft = 15;
+    const socket = io();
+    let participantId = null;
+    let currentRoundId = null;
+    let startTime = null;
+    let isModerator = false;
+    let timerInterval = null;
 
-  const connectBtn = document.getElementById("connectBtn");
-  const usernameInput = document.getElementById("username");
-  const gameDiv = document.getElementById("game");
-  const questionDiv = document.getElementById("question");
-  const answersDiv = document.getElementById("answers");
-  const answererInfo = document.getElementById("answerer-info");
-  const timerDiv = document.getElementById("timer");
-  const scoresList = document.getElementById("scoresList");
-  const logDiv = document.getElementById("log");
-
-  function log(msg) {
-    const p = document.createElement("p");
-    p.textContent = msg;
-    logDiv.appendChild(p);
-    logDiv.scrollTop = logDiv.scrollHeight;
-  }
-
-  connectBtn.onclick = () => {
-    username = usernameInput.value.trim();
-    if (!username) {
-      alert("Lütfen kullanıcı adınızı girin.");
-      return;
-    }
-
-    const protocol = location.protocol === "https:" ? "wss" : "ws";
-    ws = new WebSocket(`${protocol}://${location.host}/ws/${username}`);
-
-    ws.onopen = () => {
-      log("Sunucuya bağlandı.");
-      document.getElementById("login").style.display = "none";
-      gameDiv.style.display = "block";
+    document.getElementById("joinBtn").onclick = () => {
+        const name = document.getElementById("name").value;
+        socket.emit("join", { name, meeting_id: "demo-room", is_moderator: name.toLowerCase() === "mod" });
     };
 
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "info") {
-        log(data.message);
-        updateScores(data.scores);
-      } else if (data.type === "question") {
-        showQuestion(data);
-      } else if (data.type === "correct") {
-        log(`${data.user} doğru cevap verdi ve ${data.points} puan aldı!`);
-        updateScores(data.scores);
-      } else if (data.type === "wrong") {
-        log(`${data.user} yanlış cevap verdi.`);
-        updateScores(data.scores);
-      } else if (data.type === "error") {
-        alert(data.message);
-      } else if (data.type === "scores") {
-        updateScores(data.scores);
-      }
+    document.getElementById("startRoundBtn").onclick = () => {
+        socket.emit("start_round", {});
     };
 
-    ws.onclose = () => {
-      log("Sunucu bağlantısı kapandı.");
-      gameDiv.style.display = "none";
-      document.getElementById("login").style.display = "block";
-    };
-  };
-
-  function showQuestion(data) {
-    questionDiv.textContent = data.question;
-    currentAnswerer = data.answerer;
-    answererInfo.textContent = `Cevap sırası: ${currentAnswerer}`;
-    timeLeft = 15;
-    timerDiv.textContent = timeLeft;
-
-    answersDiv.innerHTML = "";
-    data.answers.forEach((ans, idx) => {
-      const btn = document.createElement("button");
-      btn.textContent = ans;
-      btn.className = "answer-btn";
-      btn.disabled = (username !== currentAnswerer);
-      btn.onclick = () => {
-        ws.send(JSON.stringify({ type: "answer", answer: idx }));
-        disableButtons();
-      };
-      answersDiv.appendChild(btn);
+    socket.on("joined", data => {
+        participantId = data.participant_id;
     });
 
-    startTimer();
-  }
+    socket.on("participants_update", list => {
+        const me = list.find(p => p.id === participantId);
+        if (me && me.is_moderator) {
+            isModerator = true;
+            document.getElementById("moderator-controls").style.display = "block";
+        }
+    });
 
-  function startTimer() {
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      timerDiv.textContent = timeLeft;
-      if (timeLeft <= 0) {
+    socket.on("start_round", data => {
+        currentRoundId = data.round_id;
+        startTime = Date.now();
+        document.getElementById("question-box").style.display = "block";
+        document.getElementById("winner-box").style.display = "none";
+
+        document.getElementById("question-text").innerText = data.question.text;
+        const choicesDiv = document.getElementById("choices");
+        choicesDiv.innerHTML = "";
+        data.question.choices.forEach((choice, idx) => {
+            const btn = document.createElement("button");
+            btn.innerText = choice;
+            btn.onclick = () => {
+                socket.emit("answer", {
+                    round_id: currentRoundId,
+                    selected_index: idx
+                });
+                disableChoices();
+            };
+            choicesDiv.appendChild(btn);
+        });
+
+        startTimer(10);
+    });
+
+    socket.on("player_answered", data => {
+        console.log("Player answered:", data);
+    });
+
+    socket.on("round_result", data => {
+        disableChoices();
         clearInterval(timerInterval);
-        disableButtons();
-      }
-    }, 1000);
-  }
+    });
 
-  function disableButtons() {
-    const btns = document.querySelectorAll(".answer-btn");
-    btns.forEach(b => b.disabled = true);
-  }
+    socket.on("leaderboard", list => {
+        const lb = document.getElementById("leaderboard");
+        lb.innerHTML = "<h3>Puan Tablosu</h3>";
+        list.forEach(p => {
+            lb.innerHTML += `<div>${p.name}: ${p.score}</div>`;
+        });
+    });
 
-  function updateScores(scores) {
-    if (!scores) return;
-    scoresList.innerHTML = "";
-    for (const user in scores) {
-      const li = document.createElement("li");
-      li.textContent = `${user}: ${scores[user]} puan`;
-      scoresList.appendChild(li);
+    socket.on("game_over", data => {
+        document.getElementById("winner-box").style.display = "block";
+        document.getElementById("winner-box").innerText = "Kazanan: " + data.winner;
+        document.getElementById("question-box").style.display = "none";
+    });
+
+    function disableChoices() {
+        document.querySelectorAll("#choices button").forEach(b => b.disabled = true);
     }
-  }
+
+    function startTimer(seconds) {
+        let remaining = seconds;
+        const timerEl = document.getElementById("timer");
+        timerEl.innerText = "Kalan süre: " + remaining;
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            remaining--;
+            timerEl.innerText = "Kalan süre: " + remaining;
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+            }
+        }, 1000);
+    }
 </script>
 
 </body>

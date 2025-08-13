@@ -1,14 +1,11 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-import random
 import asyncio
 import json
 from typing import List
 
 app = FastAPI()
-
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 with open("static/index.html", "r", encoding="utf-8") as f:
@@ -18,6 +15,7 @@ with open("static/index.html", "r", encoding="utf-8") as f:
 async def get():
     return HTMLResponse(html_content)
 
+# --- SORULAR ---
 questions = [
     {
         "question": "SAP'nin açılımı nedir?",
@@ -106,20 +104,21 @@ questions = [
     }
 ]
 
-
-TOTAL_QUESTIONS = 10  
+TOTAL_QUESTIONS = 10            # İstersen arttır/azalt
+QUESTION_TIME = 10              # saniye
 
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
-        self.usernames: List[str] = []  
+        self.usernames: List[str] = []
         self.scores = {}
+        self.answered_users = set()   # o soru için cevap verenler
 
     async def connect(self, websocket: WebSocket, username: str):
         await websocket.accept()
         self.active_connections.append(websocket)
         self.usernames.append(username)
-        self.scores[username] = 0
+        self.scores.setdefault(username, 0)
 
     def disconnect(self, websocket: WebSocket):
         if websocket in self.active_connections:
@@ -127,130 +126,111 @@ class ConnectionManager:
             user = self.usernames[idx]
             del self.usernames[idx]
             del self.active_connections[idx]
-            if user in self.scores:
-                del self.scores[user]
+            # Skoru silme; çıkıp tekrar girerse kaldığı yerden devam etsin
 
     async def send_personal_message(self, message: dict, websocket: WebSocket):
         await websocket.send_json(message)
 
     async def broadcast(self, message: dict):
-        for connection in self.active_connections:
-            await connection.send_json(message)
+        for connection in list(self.active_connections):
+            try:
+                await connection.send_json(message)
+            except Exception:
+                # kopan bağlantı olursa sessiz geç
+                pass
 
 manager = ConnectionManager()
 
 current_question = None
-current_answerer = None
 question_start_time = None
-asked_questions_count = 0  
-question_index = 0  
+asked_questions_count = 0
+quiz_running = False
 
-async def ask_question():
-    global current_question, current_answerer, question_start_time, asked_questions_count, question_index
+async def start_quiz():
+    global current_question, question_start_time, asked_questions_count, quiz_running
+    if quiz_running:
+        return
+    quiz_running = True
+    asked_questions_count = 0
 
-    if asked_questions_count >= TOTAL_QUESTIONS:
-        
-        if len(manager.scores) == 0:
-            winner_message = "Oyun bitti! Katılımcı yok."
-        else:
-            max_score = max(manager.scores.values())
-            winners = [user for user, score in manager.scores.items() if score == max_score]
-            if len(winners) == 1:
-                winner_message = f"Oyun bitti! Kazanan: {winners[0]} ({max_score} puan)"
-            else:
-                winner_message = f"Oyun bitti! Berabere kazananlar: {', '.join(winners)} ({max_score} puan)"
+    for i in range(TOTAL_QUESTIONS):
+        current_question = questions[i % len(questions)]
+        asked_questions_count += 1
+        manager.answered_users.clear()
+        question_start_time = asyncio.get_event_loop().time()
 
         await manager.broadcast({
-            "type": "game_over",
-            "message": winner_message,
+            "type": "scores",
             "scores": manager.scores
         })
-        reset_game()
-        return
 
-    if len(manager.active_connections) == 0:
-        return
+        await manager.broadcast({
+            "type": "question",
+            "question": current_question["question"],
+            "answers": current_question["answers"],
+            "question_number": asked_questions_count,
+            "total_questions": TOTAL_QUESTIONS,
+            "time": QUESTION_TIME
+        })
 
+        await asyncio.sleep(QUESTION_TIME)
 
-    current_question = questions[question_index % len(questions)]
-    question_index += 1
-    asked_questions_count += 1
+    await end_game()
+    quiz_running = False
 
-
-    current_answerer = random.choice(manager.usernames)
-    question_start_time = asyncio.get_event_loop().time()
-
+async def end_game():
+    if not manager.scores:
+        winner_message = "kazanan: (katılımcı yok)"
+    else:
+        max_score = max(manager.scores.values())
+        winners = [u for u, s in manager.scores.items() if s == max_score]
+        if len(winners) == 1:
+            winner_message = f"kazanan: {winners[0]} ({max_score} puan)"
+        else:
+            winner_message = f"kazananlar (berabere): {', '.join(winners)} ({max_score} puan)"
 
     await manager.broadcast({
-        "type": "scores",
+        "type": "game_over",
+        "message": winner_message,
         "scores": manager.scores
     })
 
-
-    await manager.broadcast({
-        "type": "question",
-        "question": current_question["question"],
-        "answers": current_question["answers"],
-        "answerer": current_answerer,
-        "scores": manager.scores,
-        "question_number": asked_questions_count,
-        "total_questions": TOTAL_QUESTIONS
-    })
-
-def reset_game():
-    global current_question, current_answerer, question_start_time, asked_questions_count, question_index
-    current_question = None
-    current_answerer = None
-    question_start_time = None
-    asked_questions_count = 0
-    question_index = 0
-    manager.scores = {user: 0 for user in manager.usernames}
-
-
 @app.websocket("/ws/{username}")
 async def websocket_endpoint(websocket: WebSocket, username: str):
-    global current_question
-
     await manager.connect(websocket, username)
-
-
     await manager.broadcast({
         "type": "info",
         "message": f"{username} katıldı. Toplam katılımcı: {len(manager.active_connections)}",
         "scores": manager.scores
     })
 
-
-    if len(manager.active_connections) >= 3 and current_question is None:
-        await ask_question()
+    # En az 2 kişi olunca quiz başlasın (Kahoot mantığı)
+    if len(manager.active_connections) >= 2 and not quiz_running:
+        asyncio.create_task(start_quiz())
 
     try:
         while True:
-            data = await websocket.receive_text()
-            data_json = json.loads(data)
+            raw = await websocket.receive_text()
+            data = json.loads(raw)
 
-            if data_json["type"] == "answer":
-                if username != current_answerer:
-                    await manager.send_personal_message({
-                        "type": "error",
-                        "message": "Senin sıran değil!"
-                    }, websocket)
+            if data.get("type") == "answer" and current_question is not None:
+                # aynı kullanıcı aynı soruya sadece 1 kez cevap verebilir
+                if username in manager.answered_users:
                     continue
+                manager.answered_users.add(username)
 
-                answer_time = asyncio.get_event_loop().time() - question_start_time
-                selected = data_json["answer"]
+                elapsed = asyncio.get_event_loop().time() - question_start_time
+                selected = data.get("answer")
                 correct = current_question["correct"]
 
-                if selected == correct:
-                    if answer_time <= 5:
+                if elapsed <= QUESTION_TIME and selected == correct:
+                    if elapsed <= 3:
                         points = 5
-                    elif answer_time <= 10:
+                    elif elapsed <= 7:
                         points = 3
                     else:
-                        points = 1
-
-                    manager.scores[username] += points
-
+                        points = 2
+                    manager.scores[username] = manager.scores.get(username, 0) + points
                     await manager.broadcast({
                         "type": "correct",
                         "user": username,
@@ -263,9 +243,6 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
                         "user": username,
                         "scores": manager.scores
                     })
-
-                await asyncio.sleep(1)
-                await ask_question()
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)
