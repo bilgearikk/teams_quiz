@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import socketio
 
+# --- Socket.IO async server ---
 sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
 fastapi_app = FastAPI()
 app = socketio.ASGIApp(sio, fastapi_app)

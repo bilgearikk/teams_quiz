@@ -177,8 +177,7 @@
       return;
     }
 
-    const protocol = location.protocol === "https:" ? "wss" : "ws";
-    ws = new WebSocket(${protocol}://${location.host}/ws/${username});
+    ws = new WebSocket(`ws://${location.host}/ws/${username}`);
 
     ws.onopen = () => {
       log("Sunucuya bağlandı.");
@@ -194,10 +193,10 @@
       } else if (data.type === "question") {
         showQuestion(data);
       } else if (data.type === "correct") {
-        log(${data.user} doğru cevap verdi ve ${data.points} puan aldı!);
+        log(`${data.user} doğru cevap verdi ve ${data.points} puan aldı!`);
         updateScores(data.scores);
       } else if (data.type === "wrong") {
-        log(${data.user} yanlış cevap verdi.);
+        log(`${data.user} yanlış cevap verdi.`);
         updateScores(data.scores);
       } else if (data.type === "error") {
         alert(data.message);
@@ -216,7 +215,7 @@
   function showQuestion(data) {
     questionDiv.textContent = data.question;
     currentAnswerer = data.answerer;
-    answererInfo.textContent = Cevap sırası: ${currentAnswerer};
+    answererInfo.textContent = `Cevap sırası: ${currentAnswerer}`;
     timeLeft = 15;
     timerDiv.textContent = timeLeft;
 
@@ -258,7 +257,7 @@
     scoresList.innerHTML = "";
     for (const user in scores) {
       const li = document.createElement("li");
-      li.textContent = ${user}: ${scores[user]} puan;
+      li.textContent = `${user}: ${scores[user]} puan`;
       scoresList.appendChild(li);
     }
   }
